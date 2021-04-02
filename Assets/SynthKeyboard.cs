@@ -18,6 +18,9 @@ public class SynthKeyboard : MonoBehaviour
 
     private double _phase;
 
+    private Note _note;
+    private float _gain;
+
     void Start()
     {
         _sampleRate = AudioSettings.outputSampleRate;
@@ -26,14 +29,55 @@ public class SynthKeyboard : MonoBehaviour
 
         _input = GetComponent<PlayerInput>();
         _input.onActionTriggered += ReadAction;
-        _input.actions.FindAction("C");
 
         GetComponent<AudioSource>().Play();
     }
 
     private void ReadAction(InputAction.CallbackContext context)
     {
-        //context
+        Debug.Log(context.action.name);
+
+        if (context.started)
+        {
+            switch (context.action.name)
+            {
+                case "C":
+                case "D":
+                case "E":
+                case "F":
+                case "G":
+                case "A":
+                case "B":
+                    _gain = 1f;
+                    break;
+            }
+
+            switch (context.action.name)
+            {
+                case "C": _note = new Note(261.63f); break;
+                case "D": _note = new Note(293.66f); break;
+                case "E": _note = new Note(329.63f); break;
+                case "F": _note = new Note(349.23f); break;
+                case "G": _note = new Note(392.00f); break;
+                case "A": _note = new Note(440.00f); break;
+                case "B": _note = new Note(493.88f); break;
+            }
+        }
+        else if (context.canceled)
+        {
+            switch (context.action.name)
+            {
+                case "C":
+                case "D":
+                case "E":
+                case "F":
+                case "G":
+                case "A":
+                case "B":
+                    _gain = 0f;
+                    break;
+            }
+        }
     }
 
     private double SqrWave(double phase)
@@ -51,15 +95,11 @@ public class SynthKeyboard : MonoBehaviour
     {
         double phase = _phase;
 
-        WaveSettings settings = _settings;
-        double angularFrequency = PI2 * settings.frequency / _sampleRate;
-
         int dataLen = data.Length / channels;
-
         for (int i = 0; i < dataLen; i++)
         {
-            phase += angularFrequency;
-            double wave = settings.amplitude * SqrWave(phase);
+            phase += PI2 * _note.frequency / _sampleRate;
+            double wave = _gain * _settings.amplitude * SqrWave(phase);
             for (int j = 0; j < channels; j++)
                 data[i + j] = (float)wave;
         }
@@ -68,12 +108,19 @@ public class SynthKeyboard : MonoBehaviour
     }
 }
 
+public struct Note 
+{
+    public float frequency;
+
+    public Note(float frequency)
+    {
+        this.frequency = frequency;
+    }
+}
+
 [System.Serializable]
 public struct WaveSettings
 {
     [Range(0, 1)]
     public float amplitude;
-
-    [Range(0, 22000)]
-    public int frequency;
 }

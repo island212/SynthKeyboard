@@ -310,7 +310,7 @@
                 {
                     "name": "",
                     "id": "be683780-2624-4724-8cd3-b779fa15167a",
-                    "path": "<Keyboard>/d",
+                    "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -321,7 +321,7 @@
                 {
                     "name": "",
                     "id": "10421587-669d-4029-9d11-cb8f60df7cfe",
-                    "path": "",
+                    "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -332,7 +332,7 @@
                 {
                     "name": "",
                     "id": "37b51485-2df9-4f0b-b38c-9d2dc9c4acf5",
-                    "path": "",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -343,7 +343,7 @@
                 {
                     "name": "",
                     "id": "48678ebf-a2b6-4e3e-be3f-df3abbc2942a",
-                    "path": "",
+                    "path": "<Keyboard>/g",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -354,7 +354,7 @@
                 {
                     "name": "",
                     "id": "a16a25bb-381b-4044-a53a-76dc8d49bba1",
-                    "path": "",
+                    "path": "<Keyboard>/h",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -365,7 +365,7 @@
                 {
                     "name": "",
                     "id": "70d8df10-1dff-4dff-acbb-96866b87f4d4",
-                    "path": "",
+                    "path": "<Keyboard>/j",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -376,7 +376,7 @@
                 {
                     "name": "",
                     "id": "70b77c32-ffd1-4836-b820-5068d606e1a9",
-                    "path": "",
+                    "path": "<Keyboard>/k",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
