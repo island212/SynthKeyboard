@@ -7,23 +7,19 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(AudioSource), typeof(PlayerInput))]
 public class SynthKeyboard : MonoBehaviour
 {
-    public WaveSettings _settings;
+    private PlayerInput _input;
 
     private int _sampleRate;
-
-    private System.Random _random;
-    private PlayerInput _input;
 
     private double _phase;
 
     private Note _note;
-    private float _gain;
+    private EnvelopeADSR _envelope;
 
     void Start()
     {
+        _envelope = EnvelopeADSR.Default;
         _sampleRate = AudioSettings.outputSampleRate;
-
-        _random = new System.Random();
 
         _input = GetComponent<PlayerInput>();
         _input.onActionTriggered += ReadAction;
@@ -37,32 +33,36 @@ public class SynthKeyboard : MonoBehaviour
 
     private void ReadAction(InputAction.CallbackContext context)
     {
-        if (context.started)
+        if (IsValidInputNote(context.action.name))
         {
-            _note = GetNoteByName(context.action.name);
+            if (context.started)
+            {
+                _note = GetNoteByName(context.action.name);
 
-            SetGainIfName(context.action.name, 1f);
-        }
-        else if (context.canceled)
-        {
-            SetGainIfName(context.action.name, 0f);
+                _envelope.NoteOn(AudioSettings.dspTime);
+            }
+            else if (context.canceled)
+            {
+                _envelope.NoteOff(AudioSettings.dspTime);
+            }
         }
     }
 
     void OnAudioFilterRead(float[] data, int channels)
     {
         double phase = _phase;
-
+        double amplitude = _envelope.GetAmplitude(AudioSettings.dspTime);
+        Debug.Log(amplitude);
         int dataLen = data.Length / channels;
         for (int i = 0; i < dataLen; i++)
         {
-            double wave = _gain * _settings.amplitude * Oscillator.GetValue(WaveType.Saw, phase);
+            double wave = amplitude * Oscillator.GetValue(WaveType.Saw, phase);
             for (int j = 0; j < channels; j++)
                 data[i + j] = (float)wave;
 
             //We need to % PI2 to keep the value between 0 and 2pi so it doesn't overflow.
             //Anyway the saw wave need the phase to be between 0 and 2pi to work.
-            phase = (phase + Music.FrequencyToAngular(_note.frequency) / _sampleRate) % Music.PI2;
+            phase = (phase + _note.GetAngular() / _sampleRate) % Music.PI2;
         }
 
         _phase = phase;
@@ -86,7 +86,7 @@ public class SynthKeyboard : MonoBehaviour
         _ => new Note(),
     };
 
-    private void SetGainIfName(string name, float value)
+    private bool IsValidInputNote(string name)
     {
         switch (name)
         {
@@ -103,15 +103,9 @@ public class SynthKeyboard : MonoBehaviour
             case "Bb":
             case "B":
             case "C1":
-                _gain = value;
-                break;
+                return true;
+            default:
+                return false;
         }
     }
-}
-
-[System.Serializable]
-public struct WaveSettings
-{
-    [Range(0, 1)]
-    public float amplitude;
 }
