@@ -7,8 +7,6 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(AudioSource), typeof(PlayerInput))]
 public class SynthKeyboard : MonoBehaviour
 {
-    private const double PI2 = 2 * math.PI_DBL;
-
     public WaveSettings _settings;
 
     private int _sampleRate;
@@ -31,64 +29,24 @@ public class SynthKeyboard : MonoBehaviour
         _input.onActionTriggered += ReadAction;
 
         GetComponent<AudioSource>().Play();
+
+        //Debug.LogFormat("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}",
+        //    Octave4.C, Octave4.Db, Octave4.D, Octave4.Eb, Octave4.E, Octave4.F, Octave4.Gb,
+        //    Octave4.G, Octave4.Ab, Octave4.A, Octave4.Bb, Octave4.B, Octave5.C);
     }
 
     private void ReadAction(InputAction.CallbackContext context)
     {
-        Debug.Log(context.action.name);
-
         if (context.started)
         {
-            switch (context.action.name)
-            {
-                case "C":
-                case "D":
-                case "E":
-                case "F":
-                case "G":
-                case "A":
-                case "B":
-                    _gain = 1f;
-                    break;
-            }
+            _note = GetNoteByName(context.action.name);
 
-            switch (context.action.name)
-            {
-                case "C": _note = new Note(261.63f); break;
-                case "D": _note = new Note(293.66f); break;
-                case "E": _note = new Note(329.63f); break;
-                case "F": _note = new Note(349.23f); break;
-                case "G": _note = new Note(392.00f); break;
-                case "A": _note = new Note(440.00f); break;
-                case "B": _note = new Note(493.88f); break;
-            }
+            SetGainIfName(context.action.name, 1f);
         }
         else if (context.canceled)
         {
-            switch (context.action.name)
-            {
-                case "C":
-                case "D":
-                case "E":
-                case "F":
-                case "G":
-                case "A":
-                case "B":
-                    _gain = 0f;
-                    break;
-            }
+            SetGainIfName(context.action.name, 0f);
         }
-    }
-
-    private double SqrWave(double phase)
-    {
-        double sinWave = math.sin(phase);
-        return math.sign(sinWave);
-    }
-
-    private double SinWave(double phase)
-    {
-        return math.sin(phase);
     }
 
     void OnAudioFilterRead(float[] data, int channels)
@@ -98,23 +56,56 @@ public class SynthKeyboard : MonoBehaviour
         int dataLen = data.Length / channels;
         for (int i = 0; i < dataLen; i++)
         {
-            phase += PI2 * _note.frequency / _sampleRate;
-            double wave = _gain * _settings.amplitude * SqrWave(phase);
+            double wave = _gain * _settings.amplitude * Oscillator.GetValue(WaveType.Saw, phase);
             for (int j = 0; j < channels; j++)
                 data[i + j] = (float)wave;
+
+            //We need to % PI2 to keep the value between 0 and 2pi so it doesn't overflow.
+            //Anyway the saw wave need the phase to be between 0 and 2pi to work.
+            phase = (phase + Music.FrequencyToAngular(_note.frequency) / _sampleRate) % Music.PI2;
         }
 
-        _phase = phase % PI2;
+        _phase = phase;
     }
-}
 
-public struct Note 
-{
-    public float frequency;
-
-    public Note(float frequency)
+    private Note GetNoteByName(string name) => name switch
     {
-        this.frequency = frequency;
+        "C" => new Note(Octave4.C),
+        "Db" => new Note(Octave4.Db),
+        "D" => new Note(Octave4.D),
+        "Eb" => new Note(Octave4.Eb),
+        "E" => new Note(Octave4.E),
+        "F" => new Note(Octave4.F),
+        "Gb" => new Note(Octave4.Gb),
+        "G" => new Note(Octave4.G),
+        "Ab" => new Note(Octave4.Ab),
+        "A" => new Note(Octave4.A),
+        "Bb" => new Note(Octave4.Bb),
+        "B" => new Note(Octave4.B),
+        "C1" => new Note(Octave5.C),
+        _ => new Note(),
+    };
+
+    private void SetGainIfName(string name, float value)
+    {
+        switch (name)
+        {
+            case "C":
+            case "Db":
+            case "D":
+            case "Eb":
+            case "E":
+            case "F":
+            case "Gb":
+            case "G":
+            case "Ab":
+            case "A":
+            case "Bb":
+            case "B":
+            case "C1":
+                _gain = value;
+                break;
+        }
     }
 }
 

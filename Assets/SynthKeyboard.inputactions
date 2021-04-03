@@ -84,6 +84,54 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "Db",
+                    "type": "Button",
+                    "id": "8e544604-19df-4ec9-94a2-ef41205314df",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Eb",
+                    "type": "Button",
+                    "id": "85c03da6-9437-4e4d-ad43-2030a901371c",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Gb",
+                    "type": "Button",
+                    "id": "068cb4d6-8375-4a98-a7fb-b5beaa2bd140",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Ab",
+                    "type": "Button",
+                    "id": "49e7a72d-e2d6-45f8-a22c-dfba05ebcdc0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Bb",
+                    "type": "Button",
+                    "id": "d502a2e0-7b01-47a9-8b72-d54825a620a3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "C1",
+                    "type": "Button",
+                    "id": "ab04d02d-4015-4494-97d1-6ac1f649640d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -310,7 +358,7 @@
                 {
                     "name": "",
                     "id": "be683780-2624-4724-8cd3-b779fa15167a",
-                    "path": "<Keyboard>/s",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -321,7 +369,7 @@
                 {
                     "name": "",
                     "id": "10421587-669d-4029-9d11-cb8f60df7cfe",
-                    "path": "<Keyboard>/d",
+                    "path": "<Keyboard>/x",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -332,7 +380,7 @@
                 {
                     "name": "",
                     "id": "37b51485-2df9-4f0b-b38c-9d2dc9c4acf5",
-                    "path": "<Keyboard>/f",
+                    "path": "<Keyboard>/c",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -343,7 +391,7 @@
                 {
                     "name": "",
                     "id": "48678ebf-a2b6-4e3e-be3f-df3abbc2942a",
-                    "path": "<Keyboard>/g",
+                    "path": "<Keyboard>/v",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -354,7 +402,7 @@
                 {
                     "name": "",
                     "id": "a16a25bb-381b-4044-a53a-76dc8d49bba1",
-                    "path": "<Keyboard>/h",
+                    "path": "<Keyboard>/b",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -365,7 +413,7 @@
                 {
                     "name": "",
                     "id": "70d8df10-1dff-4dff-acbb-96866b87f4d4",
-                    "path": "<Keyboard>/j",
+                    "path": "<Keyboard>/n",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -376,11 +424,77 @@
                 {
                     "name": "",
                     "id": "70b77c32-ffd1-4836-b820-5068d606e1a9",
-                    "path": "<Keyboard>/k",
+                    "path": "<Keyboard>/m",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "B",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f052a7b8-e2c8-4a89-8813-a7fb3e6512da",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Db",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "da705071-9997-44ec-96ce-d119268bce73",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Eb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9ddbe46b-d4b5-4666-ad7b-ef6cda143f6c",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Gb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0d846381-5e99-4754-8e76-8b8169ed2723",
+                    "path": "<Keyboard>/h",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Ab",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3b3db23d-46ee-4a9b-90ec-153432ea1a3a",
+                    "path": "<Keyboard>/j",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Bb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a7de84e7-b166-4577-8844-bcf191622d52",
+                    "path": "<Keyboard>/comma",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "C1",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
