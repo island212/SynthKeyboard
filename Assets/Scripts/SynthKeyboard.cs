@@ -3,28 +3,35 @@ using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = Unity.Mathematics.Random;
 
 [RequireComponent(typeof(AudioSource), typeof(PlayerInput))]
 public class SynthKeyboard : MonoBehaviour
 {
-    private PlayerInput _input;
+    public InstrumentSO _instrumentSelected;
 
-    private int _sampleRate;
-
-    private double _phase;
+    private double _timeSteps;
 
     private Note _note;
-    private EnvelopeADSR _envelope;
+
+    private PlayerInput _input;
 
     void Start()
     {
-        _envelope = EnvelopeADSR.Default;
-        _sampleRate = AudioSettings.outputSampleRate;
+        if (_instrumentSelected == null)
+        {
+            Debug.LogError("No instrument selected.");
+        }
+        else
+        {
+            _timeSteps = 1.0 / AudioSettings.outputSampleRate;
+            _instrumentSelected.instrument.Init(1234);
 
-        _input = GetComponent<PlayerInput>();
-        _input.onActionTriggered += ReadAction;
+            _input = GetComponent<PlayerInput>();
+            _input.onActionTriggered += ReadAction;
 
-        GetComponent<AudioSource>().Play();
+            GetComponent<AudioSource>().Play();
+        }
 
         //Debug.LogFormat("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}",
         //    Octave4.C, Octave4.Db, Octave4.D, Octave4.Eb, Octave4.E, Octave4.F, Octave4.Gb,
@@ -39,33 +46,28 @@ public class SynthKeyboard : MonoBehaviour
             {
                 _note = GetNoteByName(context.action.name);
 
-                _envelope.NoteOn(AudioSettings.dspTime);
+                _instrumentSelected.instrument.envelope.NoteOn(AudioSettings.dspTime);
             }
             else if (context.canceled)
             {
-                _envelope.NoteOff(AudioSettings.dspTime);
+                _instrumentSelected.instrument.envelope.NoteOff(AudioSettings.dspTime);
             }
         }
     }
 
     void OnAudioFilterRead(float[] data, int channels)
     {
-        double phase = _phase;
-        double amplitude = _envelope.GetAmplitude(AudioSettings.dspTime);
-        Debug.Log(amplitude);
+        double time = AudioSettings.dspTime;
+
         int dataLen = data.Length / channels;
         for (int i = 0; i < dataLen; i++)
         {
-            double wave = amplitude * Oscillator.GetValue(WaveType.Saw, phase);
+            double wave = _instrumentSelected.instrument.Play(time, _note);
             for (int j = 0; j < channels; j++)
                 data[i + j] = (float)wave;
 
-            //We need to % PI2 to keep the value between 0 and 2pi so it doesn't overflow.
-            //Anyway the saw wave need the phase to be between 0 and 2pi to work.
-            phase = (phase + _note.GetAngular() / _sampleRate) % Music.PI2;
+            time += _timeSteps;
         }
-
-        _phase = phase;
     }
 
     private Note GetNoteByName(string name) => name switch

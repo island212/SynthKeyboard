@@ -362,7 +362,6 @@ GameObject:
   - component: {fileID: 1199617112}
   - component: {fileID: 1199617114}
   - component: {fileID: 1199617115}
-  - component: {fileID: 1199617116}
   m_Layer: 0
   m_Name: Keyboard
   m_TagString: Untagged
@@ -382,7 +381,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.352
+  m_Volume: 0.15
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -492,8 +491,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d305b865882a6e4bb0858fb03de7433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _settings:
-    amplitude: 1
+  _instrumentSelected: {fileID: 11400000, guid: ab9d1498973a7f34d9f310188b8b603d, type: 2}
 --- !u!114 &1199617115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -524,18 +522,3 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 519420031}
---- !u!114 &1199617116
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1199617111}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7aed58d2741df7248ace8d47e5281bf1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  frequency: 100
-  amplitude: 1
-  sampleRate: 44100

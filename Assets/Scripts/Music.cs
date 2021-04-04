@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
-public enum WaveType { Sin, Square, Triangle, Saw }
+public enum WaveType { Sin, Square, Triangle, Saw, Random }
 
 public enum NoteType { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B }
 
@@ -35,32 +35,52 @@ public static class Music
     };
 }
 
-public static class Oscillator
+public struct Oscillator
 {
+    public Random random;
+
+    public Oscillator(uint seed)
+    {
+        random = new Random(seed);
+    }
+
     /// <summary>
     /// Create a wave sound from a phase between 0 and 2pi and the wave type
     /// </summary>
     /// <param name="type">The wave type</param>
     /// <param name="phase">The phase</param>
     /// <returns>The wave value</returns>
-    public static double GetValue(WaveType type, double phase) => type switch
+    public double GetValue(double time, Note note, WaveType type, double LFOAmplitude = 0.0, Note LFONote = default)
     {
-        WaveType.Sin => SinWave(phase),
-        WaveType.Square => SqrWave(phase),
-        WaveType.Triangle => TriangleWave(phase),
-        WaveType.Saw => SawWave(phase),
-        _ => throw new System.ArgumentException(string.Format("The WaveType {0} is invalid", type)),
-    };
+        double phase = note.angular * time;
+        //Add a low frequency oscillator for frequency modulation if needed
+        phase += LFOAmplitude * LFONote.angular * math.sin(LFONote.angular * time);
 
-    public static double SqrWave(double phase)
+        return type switch
+        {
+            WaveType.Sin => SinWave(phase),
+            WaveType.Square => SqrWave(phase),
+            WaveType.Triangle => TriangleWave(phase),
+            WaveType.Saw => SawWave(phase),
+            WaveType.Random => RandomWave(ref random),
+            _ => throw new System.ArgumentException(string.Format("The WaveType {0} is invalid", type)),
+        };
+    }
+
+    public double GetValue(double time, Note note, OscillatorParams osParams)
     {
-        double sinWave = math.sin(phase);
-        return math.sign(sinWave);
+        return GetValue(time, note.Mul(osParams.multiply), osParams.type, osParams.LFOAmplitude, new Note(osParams.LFOFrequency));
     }
 
     public static double SinWave(double phase)
     {
         return math.sin(phase);
+    }
+
+    public static double SqrWave(double phase)
+    {
+        double sinWave = math.sin(phase);
+        return math.sign(sinWave);
     }
 
     public static double TriangleWave(double phase)
@@ -71,8 +91,22 @@ public static class Oscillator
     public static double SawWave(double phase)
     {
         //Only work if the phase is between 0 and 2pi.
-        return phase / math.PI_DBL - 1;
+        return (phase % Music.PI2) / math.PI_DBL - 1;
     }
+
+    public static double RandomWave(ref Random random)
+    {
+        return random.NextDouble() * 2 - 1;
+    }
+}
+
+[System.Serializable]
+public struct OscillatorParams
+{
+    public double multiply;
+    public WaveType type;
+    public double LFOAmplitude;
+    public double LFOFrequency;
 }
 
 public struct Note
@@ -90,32 +124,34 @@ public struct Note
     public const double OCT12TH_DIV = 1.0 / OCT12TH;
 
     public double frequency;
+    public double angular;
 
     public Note(double frequency)
     {
         this.frequency = frequency;
+        angular = Music.PI2 * frequency;
     }
 
-    /// <summary>
-    /// Convert frequency (Hz) to angular velocity
-    /// </summary>
-    /// <returns>The angular velocity</returns>
-    public double GetAngular() => Music.PI2 * frequency;
+    public Note Mul(double multiply)
+    {
+        return new Note(frequency * multiply);
+    }
 }
 
+[System.Serializable]
 public struct EnvelopeADSR
 {
-    public static EnvelopeADSR Default = new EnvelopeADSR(0.01, 0.01, 0.02, 1.0, 0.8);
+    public static EnvelopeADSR simple = new EnvelopeADSR(0.01, 0.01, 0.02, 1.0, 0.8);
 
-    double attackTime;
-    double decayTime;
-    double releaseTime;
+    public double attackTime;
+    public double decayTime;
+    public double releaseTime;
 
-    double startAmplitude;
-    double sustainAmplitude;
+    public double startAmplitude;
+    public double sustainAmplitude;
 
-    double startTime;
-    double endTime;
+    private double startTime;
+    private double endTime;
 
     public EnvelopeADSR(double attackTime, double decayTime, double releaseTime, double startAmplitude, double sustainAmplitude)
     {
