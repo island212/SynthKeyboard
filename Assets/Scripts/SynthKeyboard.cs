@@ -12,8 +12,6 @@ public class SynthKeyboard : MonoBehaviour
 
     private double _timeSteps;
 
-    private Note _note;
-
     private PlayerInput _input;
 
     void Start()
@@ -42,15 +40,15 @@ public class SynthKeyboard : MonoBehaviour
     {
         if (IsValidInputNote(context.action.name))
         {
+            int noteID = GetNoteIDByName(context.action.name);
+
             if (context.started)
             {
-                _note = GetNoteByName(context.action.name);
-
-                _instrumentSelected.instrument.envelope.NoteOn(AudioSettings.dspTime);
+                _instrumentSelected.instrument.NoteOn(noteID);
             }
             else if (context.canceled)
             {
-                _instrumentSelected.instrument.envelope.NoteOff(AudioSettings.dspTime);
+                _instrumentSelected.instrument.NoteOff(noteID);
             }
         }
     }
@@ -79,7 +77,7 @@ public class SynthKeyboard : MonoBehaviour
 
         for (int i = 0; i < data.Length; i++)
         {
-            data[i] = (float)_instrumentSelected.instrument.Play(time, _note);
+            data[i] = (float)_instrumentSelected.instrument.Play(time);
 
             time += _timeSteps;
         }
@@ -91,7 +89,7 @@ public class SynthKeyboard : MonoBehaviour
 
         for (int i = 0; i < data.Length; i+=2)
         {
-            float wave = (float)_instrumentSelected.instrument.Play(time, _note);
+            float wave = (float)_instrumentSelected.instrument.Play(time);
 
             data[i] = wave;
             data[i + 1] = wave;
@@ -107,7 +105,7 @@ public class SynthKeyboard : MonoBehaviour
         int dataLen = data.Length / channels;
         for (int i = 0; i < dataLen; i++)
         {
-            float wave = (float)_instrumentSelected.instrument.Play(time, _note);
+            float wave = (float)_instrumentSelected.instrument.Play(time);
             for (int j = 0; j < channels; j++)
                 data[i + j] = wave;
 
@@ -117,22 +115,22 @@ public class SynthKeyboard : MonoBehaviour
 
     #endregion
 
-    private Note GetNoteByName(string name) => name switch
+    private int GetNoteIDByName(string name) => name switch
     {
-        "C" => new Note(Octave3.C),
-        "Db" => new Note(Octave3.Db),
-        "D" => new Note(Octave3.D),
-        "Eb" => new Note(Octave3.Eb),
-        "E" => new Note(Octave3.E),
-        "F" => new Note(Octave3.F),
-        "Gb" => new Note(Octave3.Gb),
-        "G" => new Note(Octave3.G),
-        "Ab" => new Note(Octave3.Ab),
-        "A" => new Note(Octave3.A),
-        "Bb" => new Note(Octave3.Bb),
-        "B" => new Note(Octave3.B),
-        "C1" => new Note(Octave4.C),
-        _ => new Note(),
+        "C" => OctaveID3.C,
+        "Db" => OctaveID3.Db,
+        "D" => OctaveID3.D,
+        "Eb" => OctaveID3.Eb,
+        "E" => OctaveID3.E,
+        "F" => OctaveID3.F,
+        "Gb" => OctaveID3.Gb,
+        "G" => OctaveID3.G,
+        "Ab" => OctaveID3.Ab,
+        "A" => OctaveID3.A,
+        "Bb" => OctaveID3.Bb,
+        "B" => OctaveID3.B,
+        "C1" => OctaveID4.C,
+        _ => -1,
     };
 
     private bool IsValidInputNote(string name)

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 
-public enum WaveType { Sin, Square, Triangle, Saw, Random }
+public enum WaveType { Sin, Square, Triangle, Saw, Noise }
 
 public enum NoteType { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B }
 
@@ -50,11 +50,13 @@ public struct Oscillator
     /// <param name="type">The wave type</param>
     /// <param name="phase">The phase</param>
     /// <returns>The wave value</returns>
-    public double GetValue(double time, Note note, WaveType type, double LFOAmplitude = 0.0, Note LFONote = default)
+    public double GetValue(double time, double frequency, WaveType type, double LFOAmplitude = 0.0, double LFOfrequency = 0.0)
     {
-        double phase = note.angular * time;
+        double phase = FrequencyToAngular(frequency) * time;
+
         //Add a low frequency oscillator for frequency modulation if needed
-        phase += LFOAmplitude * LFONote.angular * math.sin(LFONote.angular * time);
+        double LFOAngular = FrequencyToAngular(LFOfrequency);
+        phase += LFOAmplitude * LFOAngular * math.sin(LFOAngular * time);
 
         return type switch
         {
@@ -62,14 +64,19 @@ public struct Oscillator
             WaveType.Square => SqrWave(phase),
             WaveType.Triangle => TriangleWave(phase),
             WaveType.Saw => SawWave(phase),
-            WaveType.Random => RandomWave(ref random),
+            WaveType.Noise => RandomWave(ref random),
             _ => throw new System.ArgumentException(string.Format("The WaveType {0} is invalid", type)),
         };
     }
 
-    public double GetValue(double time, Note note, OscillatorParams osParams)
+    public double GetValue(double time, double frequency, OscillatorParams osParams)
     {
-        return GetValue(time, note.Mul(osParams.multiply), osParams.type, osParams.LFOAmplitude, new Note(osParams.LFOFrequency));
+        return GetValue(time, Note.ScaleFrequency(frequency, osParams.scale), osParams.type, osParams.LFOAmplitude, osParams.LFOFrequency);
+    }
+
+    public static double FrequencyToAngular(double frequency)
+    {
+        return Music.TAU * frequency;
     }
 
     public static double SinWave(double phase)
@@ -103,7 +110,7 @@ public struct Oscillator
 [System.Serializable]
 public struct OscillatorParams
 {
-    public double multiply;
+    public int scale;
     public WaveType type;
     public double LFOAmplitude;
     public double LFOFrequency;
@@ -121,20 +128,27 @@ public struct Note
     /// Represent one divide by the twelth root of two.
     /// Formula 1.0 / pow(2.0, 1.0 / 12.0)
     /// </summary>
-    public const double OCT12TH_DIV = 1.0 / OCT12TH;
+    public const double FRACT_1_OCT12TH = 1.0 / OCT12TH;
+
+    public int id;
 
     public double frequency;
-    public double angular;
 
-    public Note(double frequency)
+    public Note(int id)
     {
-        this.frequency = frequency;
-        angular = Music.TAU * frequency;
+        this.id = id;
+        frequency = ScaleFrequency(Octave0.C, id);
     }
 
-    public Note Mul(double multiply)
+    public Note Scale(int scale)
     {
-        return new Note(frequency * multiply);
+        return new Note(id + scale);
+    }
+
+    public static double ScaleFrequency(double frequency, int scale)
+    {
+        double scaleBase = math.select(FRACT_1_OCT12TH, OCT12TH, scale >= 0);
+        return frequency * math.pow(scaleBase, scale);
     }
 }
 
@@ -150,9 +164,6 @@ public struct EnvelopeADSR
     public double startAmplitude;
     public double sustainAmplitude;
 
-    private double startTime;
-    private double endTime;
-
     public EnvelopeADSR(double attackTime, double decayTime, double releaseTime, double startAmplitude, double sustainAmplitude)
     {
         this.attackTime = attackTime;
@@ -161,23 +172,9 @@ public struct EnvelopeADSR
 
         this.startAmplitude = startAmplitude;
         this.sustainAmplitude = sustainAmplitude;
-
-        this.startTime = 0.0;
-        this.endTime = 0.0;
     }
 
-    public void NoteOn(double time)
-    {
-        startTime = time;
-        endTime = 0;
-    }
-
-    public void NoteOff(double time)
-    {
-        endTime = time;
-    }
-
-    public double GetAmplitude(double time)
+    public double GetAmplitude(double time, double startTime, double endTime)
     {
         if (startTime <= 0)
             return 0;
@@ -218,148 +215,4 @@ public struct EnvelopeADSR
 
         return amplitude;
     }
-}
-
-public static class Octave0
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 27.5;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave1
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 55.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave2
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 110.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave3
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 220.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave4
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 440.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave5
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 880.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave6
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 1760.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave7
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 3520.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
-}
-
-public static class Octave8
-{
-    public const double C = Db * Note.OCT12TH_DIV;
-    public const double Db = D * Note.OCT12TH_DIV;
-    public const double D = Eb * Note.OCT12TH_DIV;
-    public const double Eb = E * Note.OCT12TH_DIV;
-    public const double E = F * Note.OCT12TH_DIV;
-    public const double F = Gb * Note.OCT12TH_DIV;
-    public const double Gb = G * Note.OCT12TH_DIV;
-    public const double G = Ab * Note.OCT12TH_DIV;
-    public const double Ab = A * Note.OCT12TH_DIV;
-    public const double A = 7040.0;
-    public const double Bb = A * Note.OCT12TH;
-    public const double B = A * Note.OCT12TH;
 }
