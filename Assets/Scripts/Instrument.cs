@@ -22,10 +22,10 @@ public struct Instrument
         for (int i = 0; i < oscillators.Length; i++)
         {
             totalWeight += oscillators[i].weigth;
-            sound += oscillator.GetValue(time, note, oscillators[i].osParams);
+            sound += oscillators[i].weigth * oscillator.GetValue(time, note, oscillators[i].osParams);
         }
 
-        return envelope.GetAmplitude(time) * (sound / totalWeight);
+        return volume * envelope.GetAmplitude(time) * (sound / totalWeight);
     }
 }
 

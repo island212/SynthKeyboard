@@ -57,34 +57,81 @@ public class SynthKeyboard : MonoBehaviour
 
     void OnAudioFilterRead(float[] data, int channels)
     {
+        switch (channels)
+        {
+            case 1:
+                UpdateOneChannel(data);
+                break;
+            case 2:
+                UpdateTwoChannel(data);
+                break;
+            default:
+                UpdateGeneric(data, channels);
+                break;
+        }
+    }
+
+    #region Update Channels
+
+    private void UpdateOneChannel(float[] data)
+    {
         double time = AudioSettings.dspTime;
 
-        int dataLen = data.Length / channels;
-        for (int i = 0; i < dataLen; i++)
+        for (int i = 0; i < data.Length; i++)
         {
-            double wave = _instrumentSelected.instrument.Play(time, _note);
-            for (int j = 0; j < channels; j++)
-                data[i + j] = (float)wave;
+            data[i] = (float)_instrumentSelected.instrument.Play(time, _note);
 
             time += _timeSteps;
         }
     }
 
+    private void UpdateTwoChannel(float[] data)
+    {
+        double time = AudioSettings.dspTime;
+
+        for (int i = 0; i < data.Length; i+=2)
+        {
+            float wave = (float)_instrumentSelected.instrument.Play(time, _note);
+
+            data[i] = wave;
+            data[i + 1] = wave;
+
+            time += _timeSteps;
+        }
+    }
+
+    private void UpdateGeneric(float[] data, int channels)
+    {
+        double time = AudioSettings.dspTime;
+
+        int dataLen = data.Length / channels;
+        for (int i = 0; i < dataLen; i++)
+        {
+            float wave = (float)_instrumentSelected.instrument.Play(time, _note);
+            for (int j = 0; j < channels; j++)
+                data[i + j] = wave;
+
+            time += _timeSteps;
+        }
+    }
+
+    #endregion
+
     private Note GetNoteByName(string name) => name switch
     {
-        "C" => new Note(Octave4.C),
-        "Db" => new Note(Octave4.Db),
-        "D" => new Note(Octave4.D),
-        "Eb" => new Note(Octave4.Eb),
-        "E" => new Note(Octave4.E),
-        "F" => new Note(Octave4.F),
-        "Gb" => new Note(Octave4.Gb),
-        "G" => new Note(Octave4.G),
-        "Ab" => new Note(Octave4.Ab),
-        "A" => new Note(Octave4.A),
-        "Bb" => new Note(Octave4.Bb),
-        "B" => new Note(Octave4.B),
-        "C1" => new Note(Octave5.C),
+        "C" => new Note(Octave3.C),
+        "Db" => new Note(Octave3.Db),
+        "D" => new Note(Octave3.D),
+        "Eb" => new Note(Octave3.Eb),
+        "E" => new Note(Octave3.E),
+        "F" => new Note(Octave3.F),
+        "Gb" => new Note(Octave3.Gb),
+        "G" => new Note(Octave3.G),
+        "Ab" => new Note(Octave3.Ab),
+        "A" => new Note(Octave3.A),
+        "Bb" => new Note(Octave3.Bb),
+        "B" => new Note(Octave3.B),
+        "C1" => new Note(Octave4.C),
         _ => new Note(),
     };
 
