@@ -182,9 +182,9 @@ public struct EnvelopeADSR
         if (startTime <= 0)
             return 0;
 
-        double amplitude = 0;
         double deltaTime = time - startTime;
 
+        double amplitude;
         if (endTime <= 0)
         {
             if (deltaTime <= attackTime)
@@ -203,6 +203,10 @@ public struct EnvelopeADSR
         else if(deltaTime <= endTime + releaseTime)
         {
             amplitude = ((time - endTime) / releaseTime) * -sustainAmplitude + sustainAmplitude;
+        }
+        else
+        {
+            amplitude = 0;
         }
 
         //The amplitude value could be a value really close to 0 but not exactly.
