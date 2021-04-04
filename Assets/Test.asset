@@ -24,6 +24,6 @@ MonoBehaviour:
     - weigth: 1
       osParams:
         multiply: 1
-        type: 3
+        type: 1
         LFOAmplitude: 0
         LFOFrequency: 0

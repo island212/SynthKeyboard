@@ -11,11 +11,11 @@ public static class Music
     /// <summary>
     /// PI multiply by 2
     /// </summary>
-    public const double PI2 = 2.0 * math.PI_DBL;
+    public const double TAU = 2.0 * math.PI_DBL;
 
-    public const double TWO_DIV_BY_PI = 2.0 / math.PI_DBL;
+    public const double FRACT_2_PI = 2.0 / math.PI_DBL;
 
-    public const double HALF_PI = math.PI_DBL / 2.0;
+    public const double FRACT_PI_2 = math.PI_DBL / 2.0;
 
     public static double GetFrequency(NoteType type, int octave) => type switch
     {
@@ -85,13 +85,13 @@ public struct Oscillator
 
     public static double TriangleWave(double phase)
     {
-        return math.asin(math.sin(phase) * Music.TWO_DIV_BY_PI);
+        return math.asin(math.sin(phase) * Music.FRACT_2_PI);
     }
 
     public static double SawWave(double phase)
     {
         //Only work if the phase is between 0 and 2pi.
-        return (phase % Music.PI2) / math.PI_DBL - 1;
+        return (phase % Music.TAU) / math.PI_DBL - 1;
     }
 
     public static double RandomWave(ref Random random)
@@ -129,7 +129,7 @@ public struct Note
     public Note(double frequency)
     {
         this.frequency = frequency;
-        angular = Music.PI2 * frequency;
+        angular = Music.TAU * frequency;
     }
 
     public Note Mul(double multiply)

@@ -491,7 +491,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d305b865882a6e4bb0858fb03de7433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _instrumentSelected: {fileID: 11400000, guid: ab9d1498973a7f34d9f310188b8b603d, type: 2}
+  _instrumentSelected: {fileID: 11400000, guid: ebdf3cddcd4e8944ab3ffd934407efc0, type: 2}
 --- !u!114 &1199617115
 MonoBehaviour:
   m_ObjectHideFlags: 0
