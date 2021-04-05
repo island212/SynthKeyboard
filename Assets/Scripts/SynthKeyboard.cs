@@ -8,25 +8,28 @@ using Random = Unity.Mathematics.Random;
 [RequireComponent(typeof(AudioSource), typeof(PlayerInput))]
 public class SynthKeyboard : MonoBehaviour
 {
-    public InstrumentSO _instrumentSelected;
+    public InstrumentSO instrumentSelected;
 
-    private double _timeSteps;
+    private PlayerInput input;
+    private InstrumentSystem instrumentSystem;
 
-    private PlayerInput _input;
+    private int instrumentID;
 
     void Start()
     {
-        if (_instrumentSelected == null)
+        if (instrumentSelected == null)
         {
             Debug.LogError("No instrument selected.");
         }
         else
         {
-            _timeSteps = 1.0 / AudioSettings.outputSampleRate;
-            _instrumentSelected.instrument.Init(1234);
+            instrumentSystem = new InstrumentSystem();
+            instrumentSystem.Init();
 
-            _input = GetComponent<PlayerInput>();
-            _input.onActionTriggered += ReadAction;
+            instrumentID = instrumentSystem.AddInstrument(instrumentSelected.instrument);
+
+            input = GetComponent<PlayerInput>();
+            input.onActionTriggered += ReadAction;
 
             GetComponent<AudioSource>().Play();
         }
@@ -44,76 +47,19 @@ public class SynthKeyboard : MonoBehaviour
 
             if (context.started)
             {
-                _instrumentSelected.instrument.NoteOn(noteID);
+                instrumentSystem.NoteOn(instrumentID, noteID);
             }
             else if (context.canceled)
             {
-                _instrumentSelected.instrument.NoteOff(noteID);
+                instrumentSystem.NoteOff(instrumentID, noteID);
             }
         }
     }
 
     void OnAudioFilterRead(float[] data, int channels)
     {
-        switch (channels)
-        {
-            case 1:
-                UpdateOneChannel(data);
-                break;
-            case 2:
-                UpdateTwoChannel(data);
-                break;
-            default:
-                UpdateGeneric(data, channels);
-                break;
-        }
+        instrumentSystem.OnAudioFilterRead(data, channels);
     }
-
-    #region Update Channels
-
-    private void UpdateOneChannel(float[] data)
-    {
-        double time = AudioSettings.dspTime;
-
-        for (int i = 0; i < data.Length; i++)
-        {
-            data[i] = (float)_instrumentSelected.instrument.Play(time);
-
-            time += _timeSteps;
-        }
-    }
-
-    private void UpdateTwoChannel(float[] data)
-    {
-        double time = AudioSettings.dspTime;
-
-        for (int i = 0; i < data.Length; i+=2)
-        {
-            float wave = (float)_instrumentSelected.instrument.Play(time);
-
-            data[i] = wave;
-            data[i + 1] = wave;
-
-            time += _timeSteps;
-        }
-    }
-
-    private void UpdateGeneric(float[] data, int channels)
-    {
-        double time = AudioSettings.dspTime;
-
-        int dataLen = data.Length / channels;
-        for (int i = 0; i < dataLen; i++)
-        {
-            float wave = (float)_instrumentSelected.instrument.Play(time);
-            for (int j = 0; j < channels; j++)
-                data[i + j] = wave;
-
-            time += _timeSteps;
-        }
-    }
-
-    #endregion
 
     private int GetNoteIDByName(string name) => name switch
     {

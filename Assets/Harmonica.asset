@@ -15,33 +15,27 @@ MonoBehaviour:
   instrument:
     volume: 1
     envelope:
-      attackTime: 0.001
-      decayTime: 0.001
-      releaseTime: 0.02
+      attackTime: 0.05
+      decayTime: 1
+      releaseTime: 0.1
       startAmplitude: 1
-      sustainAmplitude: 0.8
+      sustainAmplitude: 0.95
     oscillators:
     - weigth: 1
       osParams:
-        multiply: 1
+        scale: 0
         type: 1
         LFOAmplitude: 0.5
         LFOFrequency: 0.001
     - weigth: 0.5
       osParams:
-        multiply: 2
+        scale: 0
         type: 1
         LFOAmplitude: 0
         LFOFrequency: 0
     - weigth: 0.25
       osParams:
-        multiply: 1.5
-        type: 1
-        LFOAmplitude: 0
-        LFOFrequency: 0
-    - weigth: 0.05
-      osParams:
-        multiply: 1
+        scale: 0
         type: 4
         LFOAmplitude: 0
         LFOFrequency: 0
