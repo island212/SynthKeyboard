@@ -153,7 +153,7 @@ public struct HandleNoteJob
 
     private void HandleRequestOff()
     {
-        foreach (var request in requestOn)
+        foreach (var request in requestOff)
         {
             int index = noteIDs.FindIndex(x => x == request.id);
             if (index == -1)
@@ -175,8 +175,6 @@ public struct InstrumentsData
     public List<double> notesStartTime;
     public List<double> notesEndTime;
 
-    public object requestOnMutex;
-    public object requestOffMutex;
     public List<NoteRequest> requestOn;
     public List<NoteRequest> requestOff;
 }
@@ -208,8 +206,6 @@ public class InstrumentSystem
             notesEndTime = new List<double>(),
             notesStartTime = new List<double>(),
 
-            requestOnMutex = new Mutex(),
-            requestOffMutex = new Mutex(),
             requestOn = new List<NoteRequest>(),
             requestOff = new List<NoteRequest>()
         });
@@ -243,54 +239,38 @@ public class InstrumentSystem
 
     public void NoteOn(int instrumentID, int noteID)
     {
-        lock (instrumentsDatas[instrumentID].requestOnMutex)
-        {
-            instrumentsDatas[instrumentID].requestOn.Add(new NoteRequest { id = noteID, time = AudioSettings.dspTime });
-        }    
+        instrumentsDatas[instrumentID].requestOn.Add(new NoteRequest { id = noteID, time = AudioSettings.dspTime });
     }
 
     public void NoteOff(int instrumentID, int noteID)
     {
-        lock (instrumentsDatas[instrumentID].requestOnMutex)
-        {
-            instrumentsDatas[instrumentID].requestOff.Add(new NoteRequest { id = noteID, time = AudioSettings.dspTime });
-        }
+        instrumentsDatas[instrumentID].requestOff.Add(new NoteRequest { id = noteID, time = AudioSettings.dspTime });
     }
 
     public void OnAudioFilterRead(float[] data, int channels)
     {
         double time = AudioSettings.dspTime;
 
+        //Swap the buffer so that we can still add NoteOn and NoteOff during the handleNoteJob.
         for (int i = 0; i < handleNoteJobs.Count; i++)
         {
-            //Swap the requestOn buffer
-            lock (instrumentsDatas[i].requestOnMutex)
-            {
-                var instrumentData = instrumentsDatas[i];
-                var handleNoteJob = handleNoteJobs[i];
+            var instrumentData = instrumentsDatas[i];
+            var handleNoteJob = handleNoteJobs[i];
 
-                var tempSwap = instrumentData.requestOn;
-                instrumentData.requestOn = handleNoteJob.requestOff;
-                handleNoteJob.requestOn = tempSwap;
+            var requestOnSwap = instrumentData.requestOn;
+            instrumentData.requestOn = handleNoteJob.requestOn;
+            handleNoteJob.requestOn = requestOnSwap;
 
-                instrumentsDatas[i] = instrumentData;
-                handleNoteJobs[i] = handleNoteJob;
-            }
+            var requestOffSwap = instrumentData.requestOff;
+            instrumentData.requestOff = handleNoteJob.requestOff;
+            handleNoteJob.requestOff = requestOffSwap;
 
-            //Swap the requestOff buffer
-            lock (instrumentsDatas[i].requestOffMutex)
-            {
-                var instrumentData = instrumentsDatas[i];
-                var handleNoteJob = handleNoteJobs[i];
+            instrumentsDatas[i] = instrumentData;
+            handleNoteJobs[i] = handleNoteJob;       
+        }
 
-                var tempSwap = instrumentData.requestOff;
-                instrumentData.requestOff = handleNoteJob.requestOff;
-                handleNoteJob.requestOff = tempSwap;
-
-                instrumentsDatas[i] = instrumentData;
-                handleNoteJobs[i] = handleNoteJob;
-            }
-
+        for (int i = 0; i < handleNoteJobs.Count; i++)
+        {
             handleNoteJobs[i].ExecuteJob();
         }
 

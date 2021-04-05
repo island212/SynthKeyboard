@@ -23,19 +23,25 @@ MonoBehaviour:
     oscillators:
     - weigth: 1
       osParams:
+        scale: -12
+        type: 3
+        LFOAmplitude: 0.5
+        LFOFrequency: 100
+    - weigth: 1
+      osParams:
         scale: 0
         type: 1
         LFOAmplitude: 0.5
         LFOFrequency: 0.001
     - weigth: 0.5
       osParams:
-        scale: 0
+        scale: 12
         type: 1
         LFOAmplitude: 0
         LFOFrequency: 0
-    - weigth: 0.25
+    - weigth: 0.05
       osParams:
-        scale: 0
+        scale: 24
         type: 4
         LFOAmplitude: 0
         LFOFrequency: 0

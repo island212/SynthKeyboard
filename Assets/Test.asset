@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Test
   m_EditorClassIdentifier: 
   instrument:
-    volume: 0
+    volume: 1
     envelope:
       attackTime: 0.01
       decayTime: 0.01
@@ -21,9 +21,9 @@ MonoBehaviour:
       startAmplitude: 1
       sustainAmplitude: 0.8
     oscillators:
-    - weigth: 1
+    - weigth: 0.05
       osParams:
-        multiply: 1
-        type: 1
+        scale: 0
+        type: 4
         LFOAmplitude: 0
         LFOFrequency: 0
